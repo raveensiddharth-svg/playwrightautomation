@@ -11,7 +11,7 @@ export default defineConfig({
   },
   reporter : 'html',
   use: {
-    browserName : 'firefox',
+    browserName : 'chromium',
     headless : false
   }
 });

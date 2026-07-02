@@ -3,5 +3,17 @@
         {
             "path": "."
         }
-    ]
+    ],
+    
+    "settings": {
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": true,
+            "strings": true
+        },
+        "editor.suggestOnTriggerCharacters": true,
+        "editor.inlineSuggest.enabled": false,
+        "editor.parameterHints.enabled": true
+    }
+
 }

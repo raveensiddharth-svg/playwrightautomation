@@ -59,7 +59,7 @@ test('Test to login to RahulShettyAcademy and print the first item card name', a
 })
 
 
-test.only('UI Controls test', async ({page})=> 
+test('UI Controls test', async ({page})=> 
 {
     await page.goto("https://rahulshettyacademy.com/loginpagePractise/");
 

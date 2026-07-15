@@ -14,6 +14,8 @@ const createOrderPayload = {
     ]
 }
 
+const getOrdersExpResponse = { data: [], message: "No Orders" };
+
 let token;
 let idOrder;
 
@@ -48,10 +50,6 @@ test.beforeAll(async ()=>
     const createOrderResponseJson = await createOrderResponse.json();
     idOrder = createOrderResponseJson.orders[0];
     console.log("The order id from api is " + idOrder);
-
-
-
-
 })
 
 test('Login to Client app and fetch all the product names', async ({page})=>
@@ -66,21 +64,27 @@ test('Login to Client app and fetch all the product names', async ({page})=>
     console.log("The page title is " + await page.title());
     await expect(page).toHaveTitle("Let's Shop");
 
-    await page.locator("button[routerlink*='myorders']").click();
+    //Intercept the network api calls and alter the response
 
-    const orderHistoryTableRows = page.locator("tr.ng-star-inserted");
-    await orderHistoryTableRows.last().waitFor();
-    const rowCount = await orderHistoryTableRows.count();
-    for(let i=0;i<rowCount;++i) {
-        const orderNumber = await orderHistoryTableRows.locator("[scope='row']").nth(i).textContent();
-        if(orderNumber === idOrder )
+    await page.route("https://rahulshettyacademy.com/api/ecom/order/get-orders-for-customer/6a467c50cd73adf7e58cee84", 
+        async route =>
         {
-            await orderHistoryTableRows.locator(".btn-primary").nth(i).click();
-            break;
+            const actResponse = await page.request.fetch(route.request());
+            let body = JSON.stringify(getOrdersExpResponse);
+            await route.fulfill(
+                {
+                    actResponse,
+                    body
+                }
+            );
+
         }
-    }
-    await expect(page.locator(".tagline")).toHaveText("Thank you for Shopping With Us");
-    const finalOrderId = await page.locator(".col-text").textContent();
-    console.log("Final page order id is " + finalOrderId);
-    expect(await idOrder.includes(finalOrderId)).toBeTruthy();
+    );
+
+    await page.locator("button[routerlink*='myorders']").click();
+    await page.waitForResponse("https://rahulshettyacademy.com/api/ecom/order/get-orders-for-customer/6a467c50cd73adf7e58cee84");
+    const zeroStateMsg = await page.locator(".mt-4").textContent();
+    console.log("The zero state msg is " + zeroStateMsg);
+    await expect(zeroStateMsg.includes("Visit")).toBeTruthy();
+    
 })

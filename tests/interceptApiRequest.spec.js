@@ -14,6 +14,8 @@ const createOrderPayload = {
     ]
 }
 
+const getOrdersExpResponse = { data: [], message: "No Orders" };
+
 let token;
 let idOrder;
 
@@ -48,10 +50,6 @@ test.beforeAll(async ()=>
     const createOrderResponseJson = await createOrderResponse.json();
     idOrder = createOrderResponseJson.orders[0];
     console.log("The order id from api is " + idOrder);
-
-
-
-
 })
 
 test('Login to Client app and fetch all the product names', async ({page})=>
@@ -66,21 +64,15 @@ test('Login to Client app and fetch all the product names', async ({page})=>
     console.log("The page title is " + await page.title());
     await expect(page).toHaveTitle("Let's Shop");
 
-    await page.locator("button[routerlink*='myorders']").click();
+    //Intercept the network api calls and alter the response
 
-    const orderHistoryTableRows = page.locator("tr.ng-star-inserted");
-    await orderHistoryTableRows.last().waitFor();
-    const rowCount = await orderHistoryTableRows.count();
-    for(let i=0;i<rowCount;++i) {
-        const orderNumber = await orderHistoryTableRows.locator("[scope='row']").nth(i).textContent();
-        if(orderNumber === idOrder )
+    await page.route("https://rahulshettyacademy.com/api/ecom/order/get-orders-details?id=*", route=>
         {
-            await orderHistoryTableRows.locator(".btn-primary").nth(i).click();
-            break;
+            route.continue({url:"https://rahulshettyacademy.com/api/ecom/order/get-orders-details?id=6a565ec885b8849b49e99bed"});
         }
-    }
-    await expect(page.locator(".tagline")).toHaveText("Thank you for Shopping With Us");
-    const finalOrderId = await page.locator(".col-text").textContent();
-    console.log("Final page order id is " + finalOrderId);
-    expect(await idOrder.includes(finalOrderId)).toBeTruthy();
+    );
+    await page.locator("button[routerlink*='myorders']").click();
+    await page.getByRole("button",{name:'View'}).first().click();
+    await page.waitForResponse("https://rahulshettyacademy.com/api/ecom/order/get-orders-details?id=*");
+    await expect(page.locator("p.blink_me")).toHaveText("You are not authorize to view this order");  
 })

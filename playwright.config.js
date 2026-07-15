@@ -14,7 +14,9 @@ export default defineConfig({
     browserName : 'chromium',
     headless : false,
     trace : 'retain-on-failure',
-    screenshot : 'on'
+    screenshot : 'on',
+    acceptDownloads: true,
+    downloadsPath: 'C:\\Users\\Windows\\Downloads'
   }
 });
 
